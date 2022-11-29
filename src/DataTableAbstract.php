@@ -3,6 +3,7 @@
 namespace Irsyadulibad\DataTables;
 
 use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Format\JSONFormatter;
 
 abstract class DataTableAbstract
@@ -13,12 +14,12 @@ abstract class DataTableAbstract
     protected array $columnDef = [
         'index' => [
             'indexed' => false,
-            'rowID' => 'DT_RowIndex'
+            'rowID'   => 'DT_RowIndex'
         ],
         'append' => [],
-        'edit' => [],
-        'hide' => [],
-        'raw' => []
+        'edit'   => [],
+        'hide'   => [],
+        'raw'    => []
     ];
 
     /**
@@ -41,7 +42,9 @@ abstract class DataTableAbstract
     protected $isFilterApplied = false;
 
     protected BaseBuilder $builder;
-
+    
+    protected BaseConnection $connection;
+    
     /**
      * Hide column from response
      * 
@@ -73,7 +76,7 @@ abstract class DataTableAbstract
     public function addColumn(string $name, callable $callback)
     {
         $this->columnDef['append'][] = [
-            'name' => $name,
+            'name'     => $name,
             'callback' => $callback
         ];
 
@@ -89,7 +92,7 @@ abstract class DataTableAbstract
     public function editColumn(string $name, callable $callback)
     {
         $this->columnDef['edit'][] = [
-            'name' => $name,
+            'name'     => $name,
             'callback' => $callback
         ];
 
@@ -116,10 +119,10 @@ abstract class DataTableAbstract
     protected function render(bool $dump, array $results, int $draw)
     {
         $output = [
-            'draw' => $draw,
-            'recordsTotal' => $this->totalRecords,
+            'draw' 			  => $draw,
+            'recordsTotal'    => $this->totalRecords,
             'recordsFiltered' => $this->filteredRecords,
-            'data' => $results
+            'data' 			  => $results
         ];
 
         if(!$dump) {
@@ -134,7 +137,11 @@ abstract class DataTableAbstract
      */
     protected function countTotal()
     {
-        return $this->builder->countAllResults(false);
+    	if($this->connection->DBDriver == 'SQLSRV') {
+			return $this->builder->countAllResults(false);
+		}
+		
+		return $this->builder->countAll(false);
     }
 
     /**
